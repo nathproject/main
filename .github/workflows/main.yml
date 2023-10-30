@@ -39,3 +39,15 @@ jobs:
         run: |
           docker build -f docker/Dockerfile.prod -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dispatch infrastructure
+        run: |
+          curl -H "Accept: application/vnd.github.everest-preview+json" \
+          -H "Authorization: token ${{ secrets.INFRA_AUTH_TOKEN }}" \
+          --request POST \
+          --data '{"event_type": "deploy_project", "client_payload": { "foo": "bar" }}' https://api.github.com/repos/nathproject/infrastructure/dispatches 
